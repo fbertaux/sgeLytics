@@ -8,11 +8,11 @@ Requires numpy and scipy.
 
 ## Model description
 
-GeneON <-> GeneOFF (kon,koff)
-GeneON -> mRNA + GeneON (ksm)
-mRNA -> 0 (rm)
-mRNA -> Prot + mRNA (ksp)
-Prot -> 0 (rp)
+* GeneON <-> GeneOFF (kon,koff)
+* GeneON -> mRNA + GeneON (ksm)
+* mRNA -> 0 (rm)
+* mRNA -> Prot + mRNA (ksp)
+* Prot -> 0 (rp)
 
 ## Equivalent parameterization
 
