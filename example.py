@@ -3,42 +3,27 @@
 import sgeLytics as sgel
 from numpy import exp,log,sqrt
 
-# define a model using Ton/Toff/EM
+# define a model using Ton/Toff/EM/HLM/HLP ('direct' parameterization)
 model = sgel.SgeModel ()
-model.defineModel ( Ton=0.1 , Toff=2.6 , EM=17.0 , HLM=9.0 , HLP=27.0 , EP=1.0 )
+model.defineModel ( Ton=0.1 , Toff=2.6 , EM=20.0 , HLM=10.0 , HLP=27.0 )
 
-# compute the CV and the mixing time (half-autocorrelation time)
-# print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
+# compute the CV and the mixing time Tau (half-autocorrelation time)
+print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
 
-# verify we can find back original parameters with our search functions !
-# (EG,rg) = sgel.estimate_EG_RG_from_EM_rm_rp_CV_Tau (model.EM,model.rm,model.rp,model.giveCV(),model.giveMixingTime())
-# print 'EG found = %f , EG expected = %f' % (EG , model.EG )
-# print 'rg found = %f , rg expected = %f' % (rg , model.rg)
+# Alternatively, a model can be parameterized by defining constraints on CV, Tau (and HLP)
+model.defineModelFromCVTauHLP ( 0.25 , 42 , 27.0 )
+print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
 
-# test the function that parameterize a model from CV and Tau
-# model = sgel.SgeModel ()
-# model.defineModelFromCVTau ( 0.25 , 41.2 , 30.0 , 20.0 , 9.0 )
+# Although an adequate solution will always be found when it exists, it is not unique
+print 'Ton = %f , Toff = %f , EM = %f , HLM = %f , HLP = %f' % ( model.Ton , model.Toff , model.EM , model.HLM , model.HLP )
 
-# print sgel.computeEG_from_rg_rm_rp_CV2PG ( 1. , 1. , 1. , 0.5 )
+# The additional constraint on HLP can be replace by a constraint on HLM
+model.defineModelFromCVTauHLM ( 0.25 , 42 , 10.0 )
+print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
+print 'Ton = %f , Toff = %f , EM = %f , HLM = %f , HLP = %f' % ( model.Ton , model.Toff , model.EM , model.HLM , model.HLP )
 
-
-Tau_wanted = 5.0
-CV_wanted = 0.25
-HLP_wanted = 20.0
-
-# (rg,EG,EM,HLM,best_Tau) = sgel.find_params_given_CV_Tau_HLP ( CV_wanted , Tau_wanted , HLP_wanted )
-# print 'rg = %f , EG = %f , EM = %f , HLM = %f , best_Tau = %f' % (rg,EG,EM,HLM,best_Tau)
-# print ' verified CV = %f , verified Tau = %f' % ( sgel.computeCV (rg,log(2.)/HLM,log(2.)/HLP_wanted,EG,EM) , sgel.estimateTau (rg,log(2.)/HLM,log(2.)/HLP_wanted,EG,EM) )
-
-HLM_wanted = 4.0
-
-(rg,EG,EM,HLP,best_Tau) = sgel.find_params_given_CV_Tau_HLM ( CV_wanted , Tau_wanted , HLM_wanted )
-print 'rg = %f , EG = %f , EM = %f , HLP = %f , best_Tau = %f' % (rg,EG,EM,HLP,best_Tau)
-print ' verified CV = %f , verified Tau = %f' % ( sgel.computeCV (rg,log(2.)/HLM_wanted,log(2.)/HLP,EG,EM) , sgel.estimateTau (rg,log(2.)/HLM_wanted,log(2.)/HLP,EG,EM) )
-
-
-
-# (rg,EG,EM,best_Tau) = sgel.find_best_rg_EM_for_Tau_given_CV_rm_rp ( Tau_wanted , CV_wanted , log(2.)/HLM_wanted , log(2.)/HLP_wanted )
-# print 'rg = %f , EG = %f , EM = %f , best_Tau = %f' % (rg,EG,EM,best_Tau)
-# print ' verified CV = %f , verified Tau = %f' % ( sgel.computeCV (rg,log(2.)/HLM_wanted,log(2.)/HLP_wanted,EG,EM) , sgel.estimateTau (rg,log(2.)/HLM_wanted,log(2.)/HLP_wanted,EG,EM) )
-
+# Those two functions can be used with an additional argument if both HLP and HLM should be constrained
+# However in that case, the second constraint might not be respected if not compatible with CV and Tau
+model.defineModelFromCVTauHLP ( 0.25 , 42 , 27.0 , 7.0 )
+print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
+print 'Ton = %f , Toff = %f , EM = %f , HLM = %f , HLP = %f' % ( model.Ton , model.Toff , model.EM , model.HLM , model.HLP )
