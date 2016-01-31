@@ -61,6 +61,7 @@ def computeAutocorrelationProt (rg,rm,rp,EG,EM,t) :
 	return exp(-rp*t) + computeHM (rm,rp,t) + (1.-EG) / EG / computeCV_2(rg,rm,rp,EG,EM) * rp * rm / (rp+rg) / (rm+rg) * computeHG(rg,rm,rp,t)
 def computeEG_from_F_CV2PG ( F , CV2PG ) : return F / ( F + CV2PG )
 def computeEG_from_rg_rm_rp_CV2PG ( rg , rm , rp , CV2PG ) : return computeEG_from_F_CV2PG ( computeF(rg,rm,rp) , CV2PG )
+def computeEM_from_rm_rp_CV2PM ( rm , rp , CV2PM ) : return rp / ( rp + rm ) / CV2PM
 
 ### analytical expressions under an implicit form
 def costEstimationTau (t,rg,rm,rp,EG,EM,autoc) : return ( computeAutocorrelationProt (rg,rm,rp,EG,EM,t) - autoc) ** 2 
@@ -90,7 +91,7 @@ def cost_find_rg_EM_for_Tau_given_CV_rm_rp ( CV2_gene_frac , Tau , CV , rm , rp 
 	EM = rp / ( rp + rm ) / ( CV*CV - CV2PG )
 	# find the best rg for Tau
 	(rg,best_Tau) = find_best_rg_for_Tau_given_CV2PG_rm_rp_EM ( Tau , CV2PG , rm , rp , EM )
-	return (best_Tau-Tau)**2. / Tau**2.
+	return ((best_Tau-Tau)/Tau)**2.
 def find_best_rg_EM_for_Tau_given_CV_rm_rp ( Tau , CV , rm , rp ) :
 	result = optimize.minimize_scalar ( cost_find_rg_EM_for_Tau_given_CV_rm_rp , args=(Tau,CV,rm,rp) , method='bounded' , bounds=(0.,1.) )
 	CV2_gene_frac = result.x
@@ -125,8 +126,26 @@ def find_params_given_CV_Tau_HLM ( CV , Tau , HLM , desired_HLP=None ) :
 		(rg,EG,EM,best_Tau) = find_best_rg_EM_for_Tau_given_CV_rm_rp ( Tau , CV , rm , rp )
 	HLP = log(2.) / rp
 	return (rg,EG,EM,HLP,best_Tau)
-
-
+def cost_estimate_TauMin_from_rg_rm_rp ( var_rep_frac , rg , rm , rp ) :
+	EM = computeEM_from_rm_rp_CV2PM(rm,rp,1.-var_rep_frac)
+	EG = computeEG_from_rg_rm_rp_CV2PG(rg,rm,rp,var_rep_frac)
+	return estimateTau (rg,rm,rp,EG,EM)
+def cost_estimate_TauMax_from_rg_rm_rp ( var_rep_frac , rg , rm , rp ) :
+	return ( - cost_estimate_TauMin_from_rg_rm_rp (var_rep_frac,rg,rm,rp) )
+def estimate_TauMin_from_rg_rm_rp ( rg , rm , rp ) :
+	result = optimize.minimize_scalar ( cost_estimate_TauMin_from_rg_rm_rp , args=(rg,rm,rp) , method='bounded' , bounds=(0.,1.) )
+	return cost_estimate_TauMin_from_rg_rm_rp(result.x,rg,rm,rp)
+def estimate_TauMax_from_rg_rm_rp ( rg , rm , rp ) :
+	result = optimize.minimize_scalar ( cost_estimate_TauMax_from_rg_rm_rp , args=(rg,rm,rp) , method='bounded' , bounds=(0.,1.) )
+	return cost_estimate_TauMin_from_rg_rm_rp(result.x,rg,rm,rp)
+def cost_estimate_alpha_from_rg_rm_rp_Tau ( var_rep_frac , rg , rm , rp , Tau ) :
+	EM = computeEM_from_rm_rp_CV2PM(rm,rp,1.-var_rep_frac)
+	EG = computeEG_from_rg_rm_rp_CV2PG(rg,rm,rp,var_rep_frac)
+	this_Tau = estimateTau (rg,rm,rp,EG,EM)
+	return ((this_Tau-Tau)/Tau)**2.
+def estimate_alpha_from_rg_rm_rp_Tau ( rg , rm , rp , Tau ) :
+	result = optimize.minimize_scalar ( cost_estimate_alpha_from_rg_rm_rp_Tau , args=(rg,rm,rp,Tau) , method='bounded' , bounds=(0.,1.) )
+	return result.x
 
 # not 100% trustable
 def estimateRG_from_rm_rp_CV_EG_EM (rm,rp,CV,EG,EM,error_if_impossible=True) :
@@ -143,7 +162,7 @@ def estimateRG_from_rm_rp_CV_EG_EM (rm,rp,CV,EG,EM,error_if_impossible=True) :
 def costEstimation_EG_RG_from_EM_rm_rp_CV_Tau (EG,EM,rm,rp,CV,Tau) :
 	rg = estimateRG_from_rm_rp_CV_EG_EM (rm,rp,CV,EG,EM,error_if_impossible=False)
 	this_tau = estimateTau (rg,rm,rp,EG,EM)
-	return (this_tau-Tau)**2. / Tau**2.
+	return ((this_tau-Tau)/Tau)**2.
 def estimate_EG_RG_from_EM_rm_rp_CV_Tau (EM,rm,rp,CV,Tau,error_if_impossible=True) :
 	result = optimize.minimize_scalar ( costEstimation_EG_RG_from_EM_rm_rp_CV_Tau , args=(EM,rm,rp,CV,Tau) , method='bounded' , bounds=(0.,1.) )
 	EG = result.x
