@@ -8,22 +8,30 @@ model = sgel.SgeModel ()
 model.defineModel ( Ton=0.1 , Toff=2.6 , EM=20.0 , HLM=10.0 , HLP=27.0 )
 
 # compute the CV and the mixing time Tau (half-autocorrelation time)
-print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
+print 'CV = %f , Tau = %f\n' % ( model.giveCV() , model.giveMixingTime() )
 
-# Alternatively, a model can be parameterized by defining constraints on CV, Tau (and HLP)
+# one can find a parameterization from its fluctuations properties
+rg = model.rg
+rm = model.rm
+rp = model.rp
+CV = 0.245
+Tau = 42.718
+model.defineModelFromCVTau_rg_rm_rp (CV,Tau,rg,rm,rp)
+print 'CV = %f , Tau = %f\n' % ( model.giveCV() , model.giveMixingTime() )
+
+# For this set of rg,rm,rp, there is no freedom in Tau
+print ('Tau_min = %f, Tau_max = %f\n') % \
+	(sgel.estimate_TauMin_from_rg_rm_rp(rg,rm,rp),sgel.estimate_TauMax_from_rg_rm_rp(rg,rm,rp))
+
+# when all timescales are comparable, there is more freedom in Tau
+rg = rp
+rm = rp
+print ('Tau_min = %f, Tau_max = %f\n') % \
+	(sgel.estimate_TauMin_from_rg_rm_rp(rg,rm,rp),sgel.estimate_TauMax_from_rg_rm_rp(rg,rm,rp))
+
+# Alternatively, it is possible to impose only one timescale in addition to CV, Tau
 model.defineModelFromCVTauHLP ( 0.25 , 42 , 27.0 )
 print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
 
-# Although an adequate solution will always be found when it exists, it is not unique
-print 'Ton = %f , Toff = %f , EM = %f , HLM = %f , HLP = %f' % ( model.Ton , model.Toff , model.EM , model.HLM , model.HLP )
-
-# The additional constraint on HLP can be replace by a constraint on HLM
-model.defineModelFromCVTauHLM ( 0.25 , 42 , 10.0 )
-print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
-print 'Ton = %f , Toff = %f , EM = %f , HLM = %f , HLP = %f' % ( model.Ton , model.Toff , model.EM , model.HLM , model.HLP )
-
-# Those two functions can be used with an additional argument if both HLP and HLM should be constrained
-# However in that case, the second constraint might not be respected if not compatible with CV and Tau
-model.defineModelFromCVTauHLP ( 0.25 , 42 , 27.0 , 7.0 )
-print 'CV = %f , Tau = %f' % ( model.giveCV() , model.giveMixingTime() )
+# But then, an adequate solution will always be found when it exists, it is not unique
 print 'Ton = %f , Toff = %f , EM = %f , HLM = %f , HLP = %f' % ( model.Ton , model.Toff , model.EM , model.HLM , model.HLP )

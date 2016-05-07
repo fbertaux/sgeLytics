@@ -23,6 +23,21 @@ class SgeModel (object) :
 		self.EG = Ton / (Ton + Toff)
 		self.rm = log(2.) / HLM 
 		self.rp = log(2.) / HLP
+	def defineModelFromCVTau_rg_rm_rp (self,CV,Tau,rg,rm,rp) :
+		self.rm = rm
+		self.rp = rp
+		self.rg = rg
+		Tau_min = estimate_TauMin_from_rg_rm_rp ( rg , rm , rp )
+		Tau_max = estimate_TauMax_from_rg_rm_rp ( rg , rm , rp )
+		if Tau <= Tau_min or Tau >= Tau_max :
+			raise Exception ('Tau constraint not compatible with rg,rm,rp (Tau_min = %f, Tau_max = %f)' % (Tau_min,Tau_max) )
+		alpha = estimate_alpha_from_rg_rm_rp_Tau ( rg , rm , rp , Tau )
+		EM = computeEM_from_rm_rp_CV2PM(rm,rp,(1.-alpha)*CV*CV)
+		self.EM = EM
+		EG = computeEG_from_rg_rm_rp_CV2PG(rg,rm,rp,alpha*CV*CV)
+		self.EG = EG
+		self.Toff = 1./rg/EG
+		self.Ton = EG * self.Toff / (1.-EG)
 	def defineModelFromCVTauHLP (self,CV,Tau,HLP,desired_HLM=None) :
 		(rg,EG,EM,HLM,best_Tau) = find_params_given_CV_Tau_HLP (CV,Tau,HLP,desired_HLM)
 		Toff = 1. / rg / EG
