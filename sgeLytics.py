@@ -1,4 +1,3 @@
-
 #### imports
 import os.path
 from numpy import exp,log,sqrt
@@ -165,7 +164,7 @@ def estimate_alpha_from_rg_rm_rp_Tau ( rg , rm , rp , Tau ) :
 # not 100% trustable
 def estimateRG_from_rm_rp_CV_EG_EM (rm,rp,CV,EG,EM,error_if_impossible=True) :
 	CV_2_G = CV*CV - computeCV2_M (rm=rm,rp=rp,EM=EM)
-	print CV_2_G / CV / CV
+	print(CV_2_G / CV / CV)
 	if (CV_2_G <= 0) : 
 		if error_if_impossible : raise Exception ('Impossible constraints: variance part from gene superior to requested total variance')
 		else : return 0. # why returning 0 here ?
