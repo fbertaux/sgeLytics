@@ -17,11 +17,13 @@ et al., 2007).
 This assumption is suited when the average protein level is large, which
 is the case for most proteins in mammalian cells.
 
-| `GeneON <-> GeneOFF` (kon, koff) | stochastic    |
-| `GeneON -> mRNA + GeneON` (ksm)  | stochastic    |
-| `mRNA -> 0` (rm)                 | stochastic    |
-| `mRNA -> Prot + mRNA` (ksp)      | deterministic |
-| `Prot -> 0` (rp)                 | deterministic |
+| Reaction                         | Simulation type |
+| ---                              | ---             |
+| `GeneON <-> GeneOFF` (kon, koff) | stochastic      |
+| `GeneON -> mRNA + GeneON` (ksm)  | stochastic      |
+| `mRNA -> 0` (rm)                 | stochastic      |
+| `mRNA -> Prot + mRNA` (ksp)      | deterministic   |
+| `Prot -> 0` (rp)                 | deterministic   |
 
 Analytical results on the corresponding steady-state distribution were
 derived for example in (Paszek et al., 2007).  During my thesis, I also
